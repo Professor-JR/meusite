@@ -1,77 +1,99 @@
-<!DOCTYPE html>
-<html lang="pt-br">
+<html>
+    <head>
+    <title>ViaCEP Webservice</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="shortcut icon" href="favicon.svg" type="image/x-icon">
-  <link rel="stylesheet" href="../src/css/style.css">
-  <title>Busca CEP &#127968;</title>
-</head>
+    <!-- Adicionando Javascript -->
+    <script>
+    
+    function limpa_formulário_cep() {
+            //Limpa valores do formulário de cep.
+            document.getElementById('rua').value=("");
+            document.getElementById('bairro').value=("");
+            document.getElementById('cidade').value=("");
+            document.getElementById('uf').value=("");
+            document.getElementById('ibge').value=("");
+    }
 
-<body>
-  <form class="form" id="form">
-    <fieldset class="form__search">
-      <label for="searchField"><h1 class="form__search__title">Buscador de Cep</h1></label>
-      <input type="text" id="searchField" name="search" class="form__search__input--text"
-        placeholder="Digite o CEP aqui!" pattern="[0-9]{5}-[\d]{3}" autofocus required>
-      <div class="form__search__btn">
-        <input type="submit" id="btnSubmitSearch" value="Enviar" name="submit" class="form__search__btn--submit">
-        <button type="button" id="btnclear" name="clear" class="form__search__btn--clear">Limpar</button>
-      </div>
-    </fieldset>
-    <fieldset name="result" class="form__result">
-      <div class="box-input-data">
-        <label for="cep" class="form__result__lbl">cep</label>
-        <input type="text" id="cep" name="cep" value="" class="form__result__value cep" readonly>
-      </div>
-      <div class="box-input-data">
-        <label for="logradouro" class="form__result__lbl">logradouro</label>
-        <input type="text" id="logradouro" name="logradouro" value="" class="form__result__value logradouro" readonly>
-      </div>
-      <div class="box-input-data">
-        <label for="complemento" class="form__result__lbl">complemento</label>
-        <input type="text" id="complemento" name="complemento" value="" class="form__result__value complemento"
-          readonly>
-      </div>
-      <div class="box-input-data">
-        <label for="bairro" class="form__result__lbl">bairro</label>
-        <input type="text" id="bairro" name="bairro" value="" class="form__result__value bairro" readonly>
-      </div>
-      <div class="box-input-data">
-        <label for="localidade" class="form__result__lbl">localidade</label>
-        <input type="text" id="localidade" name="localidade" value="" class="form__result__value localidade" readonly>
-      </div>
-      <div class="box-input-data">
-        <label for="uf" class="form__result__lbl">uf</label>
-        <input type="text" id="uf" name="uf" value="" class="form__result__value uf" readonly>
-      </div>
-      <div class="box-input-data">
-        <label for="ibge" class="form__result__lbl">ibge</label>
-        <input type="number" id="ibge" name="ibge" value="" class="form__result__value ibge" readonly>
-      </div>
-      <div class="box-input-data">
-        <label for="gia" class="form__result__lbl">gia</label>
-        <input type="number" id="gia" name="gia" value="" class="form__result__value gia" readonly>
-      </div>
-      <div class="box-input-data">
-        <label for="ddd" class="form__result__lbl">ddd</label>
-        <input type="number" id="ddd" name="ddd" value="" class="form__result__value ddd" readonly>
-      </div>
-      <div class="box-input-data">
-        <label for="siafi" class="form__result__lbl">siafi</label>
-        <input type="number" id="siafi" name="siafi" value="" class="form__result__value siafi" readonly>
-      </div>
-    </fieldset>
-  </form>
-  <div id="viewError" class="view-error">
-      <label for="" id="lblError" class="view-error__label">CEP inválido!</label>
-  </div>
-  <footer>Coded by <a href="https://github.com/Odisseu93" target="_blank">Ulisses Slvério</a>.</footer>
-  <script src="./src/js/main.js"></script>
-  <script src="./src/services/api.js"></script>
-</body>
+    function meu_callback(conteudo) {
+        if (!("erro" in conteudo)) {
+            //Atualiza os campos com os valores.
+            document.getElementById('rua').value=(conteudo.logradouro);
+            document.getElementById('bairro').value=(conteudo.bairro);
+            document.getElementById('cidade').value=(conteudo.localidade);
+            document.getElementById('uf').value=(conteudo.uf);
+            document.getElementById('ibge').value=(conteudo.ibge);
+        } //end if.
+        else {
+            //CEP não Encontrado.
+            limpa_formulário_cep();
+            alert("CEP não encontrado.");
+        }
+    }
+        
+    function pesquisacep(valor) {
 
+        //Nova variável "cep" somente com dígitos.
+        var cep = valor.replace(/\D/g, '');
 
-</html>
+        //Verifica se campo cep possui valor informado.
+        if (cep != "") {
+
+            //Expressão regular para validar o CEP.
+            var validacep = /^[0-9]{8}$/;
+
+            //Valida o formato do CEP.
+            if(validacep.test(cep)) {
+
+                //Preenche os campos com "..." enquanto consulta webservice.
+                document.getElementById('rua').value="...";
+                document.getElementById('bairro').value="...";
+                document.getElementById('cidade').value="...";
+                document.getElementById('uf').value="...";
+                document.getElementById('ibge').value="...";
+
+                //Cria um elemento javascript.
+                var script = document.createElement('script');
+
+                //Sincroniza com o callback.
+                script.src = 'https://viacep.com.br/ws/'+ cep + '/json/?callback=meu_callback';
+
+                //Insere script no documento e carrega o conteúdo.
+                document.body.appendChild(script);
+
+            } //end if.
+            else {
+                //cep é inválido.
+                limpa_formulário_cep();
+                alert("Formato de CEP inválido.");
+            }
+        } //end if.
+        else {
+            //cep sem valor, limpa formulário.
+            limpa_formulário_cep();
+        }
+    };
+
+    </script>
+    </head>
+
+    <body>
+    <!-- Inicio do formulario -->
+      <form method="get" action=".">
+        <label>Cep:
+        <input name="cep" type="text" id="cep" value="" size="10" maxlength="9"
+               onblur="pesquisacep(this.value);" /></label><br />
+        <label>Rua:
+        <input name="rua" type="text" id="rua" size="60" /></label><br />
+        <label>Bairro:
+        <input name="bairro" type="text" id="bairro" size="40" /></label><br />
+        <label>Cidade:
+        <input name="cidade" type="text" id="cidade" size="40" /></label><br />
+        <label>Estado:
+        <input name="uf" type="text" id="uf" size="2" /></label><br />
+        <label>IBGE:
+        <input name="ibge" type="text" id="ibge" size="8" /></label><br />
+      </form>
+    </body>
+
+    </html>
